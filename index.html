@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sảnh Mini Game Mô Phỏng</title>
+  <style>
+    :root {
+      --bg-app: #eef5fc;
+      --surface: #ffffff;
+      --primary: #1d8cf8;
+      --primary-dark: #0f62c7;
+      --sky-soft: #dff0ff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --gold: #f59e0b;
+      --red: #ef4444;
+      --blue: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: #dce8f5;
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      color: var(--text);
+    }
+
+    .phone-frame {
+      width: 100%;
+      max-width: 440px;
+      min-height: 100vh;
+      background: var(--bg-app);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.16);
+      position: relative;
+      padding-bottom: 74px;
+    }
+
+    /* Top Banner & Wallet */
+    .top-header {
+      background: linear-gradient(135deg, #38bdf8, #1d8cf8);
+      color: #fff;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-pill {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(6px);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 0.4px;
+    }
+
+    .wallet-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      color: var(--text);
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .wallet-box span {
+      color: #059669;
+    }
+
+    .btn-refill {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fcd34d;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* Category Tabs */
+    .cat-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 10px 12px;
+      background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .cat-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 8px 4px;
+      text-align: center;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .cat-item.active {
+      background: var(--sky-soft);
+      border-color: var(--primary);
+      box-shadow: 0 2px 8px rgba(29, 140, 248, 0.18);
+    }
+
+    .cat-icon {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .cat-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Section Header */
+    .section-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px 6px;
+    }
+
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .pill-count {
+      background: #bae6fd;
+      color: #0369a1;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    /* 3-Column Game Grid */
+    .game-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 6px 14px 14px;
+    }
+
+    .game-card {
+      background: linear-gradient(180deg, #e0f2fe 0%, #ffffff 45%);
+      border: 1.5px solid #93c5fd;
+      border-radius: 16px;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+
+    .game-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(29, 140, 248, 0.18);
+    }
+
+    .game-thumb {
+      height: 82px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 6px;
+      position: relative;
+    }
+
+    .thumb-slot { background: linear-gradient(135deg, #f97316, #dc2626); }
+    .thumb-dice { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .thumb-spin { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+    .thumb-card { background: linear-gradient(135deg, #059669, #047857); }
+    .thumb-fish { background: linear-gradient(135deg, #0284c7, #0369a1); }
+    .thumb-gem  { background: linear-gradient(135deg, #eab308, #ca8a04); }
+
+    .tag-playable {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: rgba(15, 23, 42, 0.72);
+      color: #fef08a;
+      font-size: 0.62rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    .game-name {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Playable Game Modal / Panel */
+    .play-panel {
+      display: none;
+      margin: 8px 14px 16px;
+      background: #fff;
+      border: 1.5px solid #93c5fd;
+      border-radius: 18px;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.1);
+    }
+
+    .play-panel.active {
+      display: block;
+    }
+
+    .play-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .play-title {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .btn-back {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 5px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .reels, .dice-box {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .reel, .die-box {
+      width: 68px;
+      height: 68px;
+      background: #f8fafc;
+      border: 2px solid #cbd5e1;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.9rem;
+      font-weight: 900;
+    }
+
+    .choice-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .pick-btn {
+      padding: 10px;
+      border-radius: 12px;
+      border: 2px solid #cbd5e1;
+      background: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .pick-btn.selected-tai {
+      border-color: var(--red);
+      background: #fef2f2;
+      color: var(--red);
+    }
+
+    .pick-btn.selected-xiu {
+      border-color: var(--blue);
+      background: #eff6ff;
+      color: var(--blue);
+    }
+
+    .action-main {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #38bdf8, #1d8cf8);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+
+    .msg-box {
+      margin-top: 10px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 22px;
+    }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 440px;
+      background: #fff;
+      border-top: 1px solid #e2e8f0;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      padding: 8px 4px;
+      z-index: 20;
+    }
+
+    .nav-btn {
+      background: none;
+      border: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .nav-btn.active {
+      color: var(--primary-dark);
+    }
+
+    .nav-btn span.ico {
+      font-size: 1.15rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <div class="top-header">
+      <div class="brand-pill">GAME LOBBY DEMO</div>
+      <div class="wallet-box">
+        Điểm: <span id="points">2,000</span>
+        <button class="btn-refill" onclick="refillPoints()">+2,000</button>
+      </div>
+    </div>
+
+    <div class="cat-bar">
+      <div class="cat-item active" onclick="filterCat('ALL', this)">
+        <span class="cat-icon">🔥</span>
+        <span class="cat-label">HOT</span>
+      </div>
+      <div class="cat-item" onclick="filterCat('SLOT', this)">
+        <span class="cat-icon">🎰</span>
+        <span class="cat-label">NỔ HŨ</span>
+      </div>
+      <div class="cat-item" onclick="filterCat('DICE', this)">
+        <span class="cat-icon">🎲</span>
+        <span class="cat-label">TÀI XỈU</span>
+      </div>
+      <div class="cat-item" onclick="filterCat('CARD', this)">
+        <span class="cat-icon">🃏</span>
+        <span class="cat-label">CASINO</span>
+      </div>
+      <div class="cat-item" onclick="filterCat('ARCADE', this)">
+        <span class="cat-icon">🐟</span>
+        <span class="cat-label">BẮN CÁ</span>
+      </div>
+    </div>
+
+    <!-- Khu vực chơi game (hiện khi bấm vào game chơi được) -->
+    <div class="play-panel" id="slotPanel">
+      <div class="play-top">
+        <div class="play-title">🎰 Nổ Hũ Hoa Quả (Cược 100/lượt)</div>
+        <button class="btn-back" onclick="closeGames()">← Về sảnh</button>
+      </div>
+      <div class="reels">
+        <div class="reel" id="r1">🍒</div>
+        <div class="reel" id="r2">🍋</div>
+        <div class="reel" id="r3">💎</div>
+      </div>
+      <button class="action-main" onclick="spinSlot()">QUAY NGAY (-100)</button>
+      <div class="msg-box" id="slotMsg">3 biểu tượng giống nhau: +800 điểm • 2 giống nhau: +150 điểm</div>
+    </div>
+
+    <div class="play-panel" id="dicePanel">
+      <div class="play-top">
+        <div class="play-title">🎲 Tài Xỉu Nhanh (Cược 100/ván)</div>
+        <button class="btn-back" onclick="closeGames()">← Về sảnh</button>
+      </div>
+      <div class="choice-row">
+        <button class="pick-btn selected-tai" id="pickTai" onclick="setTaiXiu('TAI')">TÀI (11–17)</button>
+        <button class="pick-btn" id="pickXiu" onclick="setTaiXiu('XIU')">XỈU (4–10)</button>
+      </div>
+      <div class="dice-box">
+        <div class="die-box" id="sd1">3</div>
+        <div class="die-box" id="sd2">4</div>
+        <div class="die-box" id="sd3">5</div>
+      </div>
+      <button class="action-main" onclick="rollMiniDice()">LẮC XÚC XẮC (-100)</button>
+      <div class="msg-box" id="diceMsg">Chọn Tài hoặc Xỉu rồi bấm Lắc xúc xắc.</div>
+    </div>
+
+    <!-- Sảnh thẻ game -->
+    <div id="lobbySection">
+      <div class="section-bar">
+        <div class="section-title" id="sectionTitle">🔥 Trò chơi nổi bật</div>
+        <div class="pill-count" id="gameCount">6 Game</div>
+      </div>
+
+      <div class="game-grid" id="gameGrid">
+        <div class="game-card" data-cat="SLOT" onclick="openGame('slot')">
+          <div class="game-thumb thumb-slot">
+            <span class="tag-playable">CHƠI ĐƯỢC</span>
+            🎰
+          </div>
+          <div class="game-name">Nổ Hũ 777</div>
+        </div>
+
+        <div class="game-card" data-cat="DICE" onclick="openGame('dice')">
+          <div class="game-thumb thumb-dice">
+            <span class="tag-playable">CHƠI ĐƯỢC</span>
+            🎲
+          </div>
+          <div class="game-name">Tài Xỉu Siêu Tốc</div>
+        </div>
+
+        <div class="game-card" data-cat="SLOT" onclick="openGame('slot')">
+          <div class="game-thumb thumb-gem">
+            <span class="tag-playable">CHƠI ĐƯỢC</span>
+            💎
+          </div>
+          <div class="game-name">Kho Báu Kim Cương</div>
+        </div>
+
+        <div class="game-card" data-cat="CARD" onclick="previewCard('Baccarat Mô Phỏng')">
+          <div class="game-thumb thumb-card">🃏</div>
+          <div class="game-name">Baccarat Mini</div>
+        </div>
+
+        <div class="game-card" data-cat="ARCADE" onclick="previewCard('Bắn Cá Đại Dương')">
+          <div class="game-thumb thumb-fish">🐟</div>
+          <div class="game-name">Bắn Cá Mini</div>
+        </div>
+
+        <div class="game-card" data-cat="DICE" onclick="openGame('dice')">
+          <div class="game-thumb thumb-spin">
+            <span class="tag-playable">CHƠI ĐƯỢC</span>
+            🎯
+          </div>
+          <div class="game-name">Xúc Xắc Vàng</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn active" onclick="closeGames()">
+        <span class="ico">🏠</span>
+        <span>Trang Chủ</span>
+      </button>
+      <button class="nav-btn" onclick="openGame('slot')">
+        <span class="ico">🎰</span>
+        <span>Nổ Hũ</span>
+      </button>
+      <button class="nav-btn" onclick="openGame('dice')">
+        <span class="ico">🎲</span>
+        <span>Tài Xỉu</span>
+      </button>
+      <button class="nav-btn" onclick="refillPoints()">
+        <span class="ico">🎁</span>
+        <span>Thưởng</span>
+      </button>
+      <button class="nav-btn" onclick="alert('Bản giao diện HTML/JS mô phỏng sảnh game giải trí.')">
+        <span class="ico">👤</span>
+        <span>Tôi</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let points = 2000;
+    let txChoice = 'TAI';
+    const symbols = ['🍒', '🍋', '🍉', '🔔', '💎'];
+
+    const pointsEl = document.getElementById('points');
+    const lobbySection = document.getElementById('lobbySection');
+    const slotPanel = document.getElementById('slotPanel');
+    const dicePanel = document.getElementById('dicePanel');
+
+    const fmt = (n) => n.toLocaleString('en-US');
+
+    function renderPoints() {
+      pointsEl.textContent = fmt(points);
+    }
+
+    function refillPoints() {
+      points += 2000;
+      renderPoints();
+    }
+
+    function filterCat(cat, el) {
+      closeGames();
+      document.querySelectorAll('.cat-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+
+      const cards = document.querySelectorAll('.game-card');
+      let visible = 0;
+      cards.forEach(card => {
+        const match = cat === 'ALL' || card.dataset.cat === cat;
+        card.style.display = match ? 'block' : 'none';
+        if (match) visible++;
+      });
+      document.getElementById('gameCount').textContent = `${visible} Game`;
+    }
+
+    function openGame(type) {
+      lobbySection.style.display = 'none';
+      slotPanel.classList.toggle('active', type === 'slot');
+      dicePanel.classList.toggle('active', type === 'dice');
+    }
+
+    function closeGames() {
+      slotPanel.classList.remove('active');
+      dicePanel.classList.remove('active');
+      lobbySection.style.display = 'block';
+    }
+
+    function previewCard(name) {
+      alert(`${name}: Bạn có thể chơi ngay mục Nổ Hũ hoặc Tài Xỉu trong bản demo này.`);
+    }
+
+    function spinSlot() {
+      const cost = 100;
+      if (points < cost) {
+        document.getElementById('slotMsg').textContent = 'Hết điểm! Bấm +2,000 ở góc trên để nạp thêm.';
+        return;
+      }
+      points -= cost;
+      const a = symbols[Math.floor(Math.random() * symbols.length)];
+      const b = symbols[Math.floor(Math.random() * symbols.length)];
+      const c = symbols[Math.floor(Math.random() * symbols.length)];
+
+      document.getElementById('r1').textContent = a;
+      document.getElementById('r2').textContent = b;
+      document.getElementById('r3').textContent = c;
+
+      let reward = 0;
+      if (a === b && b === c) {
+        reward = 800;
+        document.getElementById('slotMsg').textContent = `NỔ LỚN! Ba ${a} giống nhau — +${fmt(reward)} điểm!`;
+      } else if (a === b || b === c || a === c) {
+        reward = 150;
+        document.getElementById('slotMsg').textContent = `Trúng cặp đôi — +${fmt(reward)} điểm!`;
+      } else {
+        document.getElementById('slotMsg').textContent = 'Chưa trúng lượt này, thử lại nhé!';
+      }
+
+      points += reward;
+      renderPoints();
+    }
+
+    function setTaiXiu(side) {
+      txChoice = side;
+      document.getElementById('pickTai').classList.toggle('selected-tai', side === 'TAI');
+      document.getElementById('pickXiu').classList.toggle('selected-xiu', side === 'XIU');
+    }
+
+    function rollMiniDice() {
+      const cost = 100;
+      if (points < cost) {
+        document.getElementById('diceMsg').textContent = 'Hết điểm! Bấm +2,000 ở góc trên để nạp thêm.';
+        return;
+      }
+      points -= cost;
+      const d1 = Math.floor(Math.random() * 6) + 1;
+      const d2 = Math.floor(Math.random() * 6) + 1;
+      const d3 = Math.floor(Math.random() * 6) + 1;
+      const sum = d1 + d2 + d3;
+
+      document.getElementById('sd1').textContent = d1;
+      document.getElementById('sd2').textContent = d2;
+      document.getElementById('sd3').textContent = d3;
+
+      const isTriple = d1 === d2 && d2 === d3;
+      const outcome = sum >= 11 ? 'TAI' : 'XIU';
+
+      if (!isTriple && outcome === txChoice) {
+        points += 200;
+        document.getElementById('diceMsg').textContent = `Tổng ${sum} (${outcome === 'TAI' ? 'Tài' : 'Xỉu'}) — Thắng +100 điểm!`;
+      } else {
+        document.getElementById('diceMsg').textContent = `Tổng ${sum} (${isTriple ? 'Bộ ba' : outcome === 'TAI' ? 'Tài' : 'Xỉu'}) — Không trúng ván này.`;
+      }
+      renderPoints();
+    }
+
+    renderPoints();
+  </script>
+</body>
+</html>
+1
